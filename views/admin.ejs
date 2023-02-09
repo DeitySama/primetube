@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.1/axios.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <title>PrimeTube</title>
+</head>
+<body>
+    <section>
+        <nav class="flex flex-row justify-between px-20 py-5 bg-black text-white">
+            <a href="">PrimeTube</a>
+            <ul class="flex flex-row space-x-5">
+                <li><button class="text-sm bg-white p-2 text-black rounded-md modalBtn">Upload Video</button></li>
+                <li><button id="logout" class="bg-gray-600 text-white p-2 rounded-md text-sm"><i class="uil uil-signout"></i></button></li>
+            </ul>
+        </nav>
+    </section>
+    <section class="">
+        <div class="grid grid-cols-5 gap-10 p-20" id="videos"></div>
+    </section>
+    <section>
+        <div class="modal absolute  w-full h-screen bg-black/40 top-0 left-0 hidden">
+            <div class="w-1/2 block bg-white rounded-md border border-gray-300 mt-10 mx-auto">
+                <div class="header flex flex-row justify-between p-3 border-b border-gray-300">
+                    <h1 class="text-sm font-bold">Upload Video</h1>
+                    <button class="modalBtn">x</button>
+                </div>
+                <form id="uploadVideo" class="p-5 space-y-3" enctype="multipart/form-data">
+                    <div>
+                        <label class="text-sm text-gray-500">Title</label>
+                        <input type="text" class="block w-full border border-gray-400 mt-2 p-1 rounded-md text-sm" placeholder="Title" id="title" required/>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Description</label>
+                        <textarea type="text" class="block w-full border border-gray-400 mt-2 p-1 rounded-md text-sm" placeholder="Description" id="description" required></textarea>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Thumbnail</label>
+                        <input type="file" class="block w-full border border-gray-400 mt-2 p-1 rounded-md text-sm" placeholder="Title" id="thumbnail" required/>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Video</label>               
+                        <input accept=".mp4,.mkv,.gif,.avi,.mpeg" type="file" class="block w-full border border-gray-400 mt-2 p-1 rounded-md text-sm" id="video" placeholder="Video" required/>
+                    </div>
+                    <div>
+                        <button class="bg-black w-full py-2 text-white rounded-md text-sm">Upload Video</button>
+                    </div>
+                </form>
+            </div>  
+        </div>
+    </section>
+    <section class="videoModal w-full h-screen absolute backdrop-blur-md top-0 left-0 hidden">
+        <div class="w-3/4 mx-auto bg-white">
+            <div class="p-10 flex flex-row justify-end"><button class="border px-2 rounded-md font-bold closeVideo">x</button></div>
+            <div class="">
+                <div class="w-3/5 mx-auto py-5">
+                    <div class="my-5">
+                        <p class="text-sm text-gray-500">Title:</p>
+                        <h1 class="text-2xl title font-bold">Title</h1>
+                    </div>
+                    <video src="" class="w-full" autoplay controls></video>
+                </div>
+                <div class="video_information w-3/5 mx-auto ">
+                    <p class="text-sm text-gray-500">Description:</p>
+                    <div><p class="description">Description</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="editModal fixed top-0 bottom-0 w-full backdrop-blur-md p-20 h-screen hidden">
+        <form id="editVideo" class="bg-white w-2/4 mx-auto rounded" enctype="multipart/form-data">
+            <div class="px-10 py-3 border-b flex flex-row justify-between">
+                <p class="font-bold">Edit Video Details</p>
+                <button class="border px-2 rounded-md font-bold closeEdit" type="button">x</button>
+            </div>
+            <div class="py-5 px-10 space-y-3 ">
+                <div>
+                    <label class="text-sm text-gray-500">Title</label>
+                    <input type="text" class="block w-full border border-gray-400 mt-2 p-1 rounded-md text-sm" placeholder="Title" id="editTitle" required/>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Description</label>
+                    <textarea type="text" class="block w-full border border-gray-400 mt-2 p-1 rounded-md text-sm" placeholder="Description" id="editDescription" required></textarea>
+                </div>
+                <div>
+                    <button type="submit" class="bg-black w-full py-2 text-white rounded-md text-sm">Upload Video</button>
+                </div>
+            </div>
+        </form>
+    </section>
+</body>
+<script>
+    const modal = document.querySelector('.modal');
+    const videos = document.getElementById('videos')
+    const uploadForm = document.getElementById('uploadVideo');
+    const modalBtn = document.querySelectorAll('.modalBtn');
+    const videoModal = document.querySelector('.videoModal');
+    const closeModal = document.querySelector('.closeVideo');
+    const editModal = document.querySelector('.editModal');
+    const closeEditModal = document.querySelector('.closeEdit')
+    const editForm = document.querySelector('#editVideo');
+    const logout = document.getElementById('logout');
+
+    const toggleModal = (modal)=>{
+        if(modal.classList.contains('hidden')){
+            modal.classList.remove('hidden')
+        }else{
+            modal.classList.add('hidden')
+        }
+    }
+
+
+    uploadForm.addEventListener('submit',async(e)=>{
+        e.preventDefault();
+
+        const title = uploadForm['title'].value;
+        const description = uploadForm['description'].value;
+        const thumbnail = uploadForm['thumbnail'];
+        const video = uploadForm['video'];
+
+        const data1 = new FormData();
+        const data2 = new FormData();
+
+        data1.append('file',thumbnail.files[0]);
+        data2.append('file',video.files[0]);
+        
+        try{
+            const uri1 = await axios.post('/uploads/media/t',data1,{headers:{'Content-Type': 'multipart/form-data'}});
+            const uri2 = await axios.post('/uploads/media/v',data2,{headers:{'Content-Type': 'multipart/form-data'}});
+
+            console.log(uri1,uri2)
+
+            await axios.post('/primetube/videos',{title,description,thumbnail:uri1.data.path,url:uri2.data.path}).then((res)=>{
+                console.log(res.data)
+                uploadForm.reset();
+                toggleModal(modal);
+                fetchVids();
+            })
+        }catch(err){console.log(err)}
+    })
+
+    modalBtn.forEach((item)=>{item.addEventListener('click',(e)=>{toggleModal(modal)})});
+
+
+    const fetchVids = ()=>{
+            fetch('/primetube/videos').then(async(res)=>{
+            const results = await res.json();
+
+            if(results){
+                videos.innerHTML = ``;
+                results.forEach(item => {
+                    renderVideo(item)
+                });
+            }
+            else{
+                videos.innerHTML = `<div clas="p-10 text-center"><p>No Videos are available</p></div>`;
+            }
+        })
+    }
+
+  
+
+
+    const renderVideo = (item) =>{
+        const video = `
+                <div class="p-3 pb-4 border rounded-md cursor-pointer block">
+                    <div class="w-full h-32 bg-slate-100 rounded-md relative">
+                        <img src="${item.thumbnail}" class="w-full h-full object-cover" alt="Thumbnail">
+                        <button class="vidCard absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border backdrop-blur-md text-white py-2 px-4 uil uil-play" data-id="${item.id}"></button>
+                    </div>
+                    <div class="flex justify-between px-3">
+                        <div class="space-y-2 mt-4 w-3/4">
+                            <p class="vidCard truncate w-full" data-id="${item.id}" >${item.title}</p>
+                            <p class="text-sm text-gray-500 truncate w-full">${item.description}</p>
+                        </div>
+                        <div class="space-y-2 mt-4">
+                            <p class="text-sm text-gray-500">${(item.views>1)?item.views+' views':item.views+' view'}</p>
+                        </div>
+                    </div>
+                    <div class="p-2 mt-2 flex flex-row space-x-5">
+                        <button class="bg-black text-white w-full rounded p-1 edit" data-id="${item.id}">Edit</button>
+                        <button class="bg-gray-600 text-white w-full rounded p-1 delete" data-id="${item.id}">Delete</button>
+                    </div>
+                </div>
+        `;
+
+            videos.innerHTML += video;
+    }
+
+    videos.addEventListener('click',async(e)=>{
+        if(e.target.classList.contains('vidCard')){
+            toggleModal(videoModal);
+            axios.get(`/primetube/videos/${e.target.getAttribute('data-id')}`).then(res=>{
+                videoPlayback(res.data);
+            })
+        }
+        if(e.target.classList.contains('edit')){
+            axios.get(`/primetube/videos/${e.target.getAttribute('data-id')}`).then(res=>{
+                    editForm['editTitle'].value = res.data.title;
+                    editForm['editDescription'].value = res.data.description;
+                    localStorage.setItem('toEdit',JSON.stringify(res.data));
+
+            })
+            toggleModal(editModal);
+        }
+
+        if(e.target.classList.contains('delete')){
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#000',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Yes, delete it!'
+                }).then( async(result) => {
+                if (result.isConfirmed) {
+                        try{
+                        await axios.delete(`/primetube/videos/${e.target.getAttribute('data-id')}`).then((res)=>{
+                                fetchVids()
+                        })
+
+                        }
+                        catch(err){console.log(err)}
+                    }
+                })
+        }
+    });
+
+    const videoPlayback =(data)=>{
+        videoModal.querySelector('video').setAttribute('src',data.url);
+        videoModal.querySelector('.title').innerHTML = data.title;
+        videoModal.querySelector('.description').innerHTML = data.description;
+    }
+
+    closeModal.addEventListener('click',(e)=>{
+        videoModal.querySelector('video').setAttribute('src','');
+        videoModal.querySelector('.title').innerHTML = '';
+        videoModal.querySelector('.description').innerHTML = '';
+        toggleModal(videoModal);
+    });
+
+    closeEditModal.addEventListener('click',(e)=>{
+        toggleModal(editModal);
+    });
+
+    editForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const item = JSON.parse(localStorage.getItem('toEdit'));
+        item.title = editForm['editTitle'].value;
+        item.description = editForm['editDescription'].value;
+
+        await axios.put(`/primetube/videos/${item.id}`,item).then(res=>{
+            toggleModal(editModal);
+            editForm.reset();
+            fetchVids();
+        })
+    })
+
+    
+    //logout
+    logout.addEventListener('click',(e)=>{
+        axios.put('/primetube/users/login').then((res)=>{
+            if(res.data){
+                window.location.href="/primetube/login";
+            }
+        })
+    })
+
+    fetchVids();
+
+
+</script>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.1/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <title>Primetube</title>
+</head>
+<body>
+    <section>
+        <nav class="flex flex-row justify-between px-20 py-5 bg-black text-white">
+            <a href="" class="">PrimeTube</a>
+            <ul>
+                <li><a href="">Request Tutorial</a></li>
+            </ul>
+        </nav>
+    </section>
+    <section>
+        <div class="p-10">
+            <div class="px-10 pb-10"><input type="text" placeholder="Search" class="border block w-full px-2 py-1 rounded-md"></div>
+            <div id="videos" class="grid grid-cols-5 gap-10 px-10"></div>
+        </div>
+    </section>
+    <section class="videoModal w-full h-screen absolute backdrop-blur-md top-0 left-0 hidden">
+        <div class="w-3/4 mx-auto bg-white">
+            <div class="p-10 flex flex-row justify-end"><button class="border px-2 rounded-md font-bold closeVideo">x</button></div>
+            <div class="">
+                <div class="w-3/5 mx-auto py-5">
+                    <div class="my-5">
+                        <p class="text-sm text-gray-500">Title:</p>
+                        <h1 class="text-2xl title font-bold">Title</h1>
+                    </div>
+                    <video src="" class="w-full" autoplay controls></video>
+                </div>
+                <div class="video_information w-3/5 mx-auto ">
+                    <p class="text-sm text-gray-500">Description:</p>
+                    <div><p class="description">Description</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+<script>
+    const videos = document.getElementById('videos');
+    const videoModal = document.querySelector('.videoModal')
+    const closeModal = document.querySelector('.closeVideo');
+
+    fetch('/primetube/videos').then(async(res)=>{
+        const results = await res.json();
+        results.forEach(item => {
+            renderVideo(item)
+        });
+    })
+
+    const renderVideo = (item) =>{
+        const video = `
+                <div class="p-3 pb-4 border rounded-md">
+                    <div class="w-full h-32 bg-slate-100 rounded-md relative">
+                        <img src="${item.thumbnail}" class="w-full h-full object-cover" alt="Thumbnail">
+                        <button class="vidCard absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border backdrop-blur-md text-white py-2 px-4 uil uil-play" data-id="${item.id}"></button>
+                    </div>
+                    <div class="flex justify-between px-3">
+                        <div class="space-y-2 w-3/4 mt-4">
+                            <p class="vidCard truncate w-full cursor-pointer" data-id="${item.id}" >${item.title}</p>
+                            <p class="text-sm text-gray-500 truncate w-full">${item.description}</p>
+                        </div>
+                        <div class="space-y-2 mt-4">
+                            <p class="text-sm text-gray-500">${(item.views>1)?item.views+' views':item.views+' view'}</p>
+                        </div>
+                    </div>
+                </div>
+        `;
+
+            videos.innerHTML += video;
+    }
+
+
+    const toggleModal = (modal)=>{
+        if(modal.classList.contains('hidden')){
+            modal.classList.remove('hidden')
+        }else{
+            modal.classList.add('hidden')
+        }
+    }
+
+    videos.addEventListener('click',(e)=>{
+        if(e.target.classList.contains('vidCard')){
+            toggleModal(videoModal);
+            axios.get(`/primetube/videos/${e.target.getAttribute('data-id')}`).then(res=>{
+                videoPlayback(res.data);
+            })
+        }
+        if(e.target.classList.contains('edit')){
+            axios.get(`/primetube/videos/${e.target.getAttribute('data-id')}`).then(res=>{
+                    editForm['editTitle'].value = res.data.title;
+                    editForm['editDescription'].value = res.data.description;
+                    localStorage.setItem('toEdit',JSON.stringify(res.data));
+
+            })
+            toggleModal(editModal);
+        }
+    });
+
+    const videoPlayback =(data)=>{
+        videoModal.querySelector('video').setAttribute('src',data.url);
+        videoModal.querySelector('.title').innerHTML = data.title;
+        videoModal.querySelector('.description').innerHTML = data.description;
+    }
+
+    closeModal.addEventListener('click',(e)=>{
+        videoModal.querySelector('video').setAttribute('src','');
+        videoModal.querySelector('.title').innerHTML = '';
+        videoModal.querySelector('.description').innerHTML = '';
+        toggleModal(videoModal);
+    });
+
+
+    //deleteVideo
+
+
+
+</script>
+</html>

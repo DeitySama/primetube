@@ -30,6 +30,7 @@ app.use(cookie_parser())
 
 
 //Mount Routes
+app.use('/',views)
 app.use('/primetube',views)
 app.use('/primetube/videos',videos);
 app.use('/primetube/users',users);

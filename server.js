@@ -3,6 +3,7 @@ const app = express();
 const colors = require('colors');
 const cookie_parser = require('cookie-parser');
 const path = require('path');
+const cors = require('cors');
 
 
 
@@ -24,7 +25,10 @@ dotenv.config({
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 app.set('view engine','ejs');
-app.use(cookie_parser())
+app.use(cookie_parser());
+app.use(cors({
+    origin:'*'
+}))
 
 
 

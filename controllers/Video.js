@@ -1,24 +1,39 @@
 const Video = require('../models/Video');
 const fs = require('fs');
 const path = require('path')
+const sequelize = require('sequelize');
+const {} = require('sequelize');
 
 exports.getVideos = async(req,res,next)=>{
-        const videos = await Video.findAll();
-        res.json(videos)
-}
+    let videos;
+    const {query,limit,offset} = req.query;
+        if(query){
+            videos = await Video.findAll({
+                limit:10,
+                where:{
+                    description:sequelize.where(sequelize.fn('LOWER', sequelize.col('description')), 'LIKE', '%' + query.toLowerCase() + '%')                    
+                }
+            })
+
+            res.json(videos)
+        }
+        else{
+            videos = await Video.findAll({limit:limit, offset:offset});
+            res.json(videos)
+        }
+    }
 
 exports.createVideo = async (req,res,next)=>{
     try{
         const video = await Video.create(req.body);
         res.json(video);
-    }
+    } 
     catch(error){
         res.json(error)
     }
 }
 
 exports.getVideo= async (req,res,next) =>{
-    console.log(req.params)
     try{
         const video = await Video.findByPk(parseInt(req.params.id));
         const views = video.views + 1;

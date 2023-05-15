@@ -3,8 +3,11 @@ const app = express();
 const colors = require('colors');
 const cookie_parser = require('cookie-parser');
 const path = require('path');
+const cors = require('cors')
 
-
+app.use(cors({
+    origin:'*'
+}))
 
 const dotenv = require('dotenv');
 const {connectDB} = require('./db.js');

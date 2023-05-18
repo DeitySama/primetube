@@ -19,6 +19,7 @@ const videos = require('./routes/Videos.js');
 const users = require('./routes/Users.js');
 const views = require('./routes/Views.js');
 const files = require('./routes/Upload.js');
+const categories = require('./routes/Categories.js');
 
 dotenv.config({
     path:'./.env'
@@ -37,6 +38,7 @@ app.use('/',views)
 app.use('/primetube',views)
 app.use('/primetube/videos',videos);
 app.use('/primetube/users',users);
+app.use('/primetube/categories',categories);
 app.use('/uploads/thumbnails', express.static(path.join(__dirname, '/uploads/thumbnails')));
 app.use('/uploads/videos', express.static(path.join(__dirname, '/uploads/videos')));
 app.use('/uploads/media',files);
@@ -46,3 +48,4 @@ connectDB();
 const PORT = process.env.PORT || 5600;
 
 const server  = app.listen(PORT,console.log(`Server Running on PORT: ${PORT}`.bold.cyan));
+ 

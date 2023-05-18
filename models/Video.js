@@ -3,8 +3,8 @@ const sequelize = new Sequelize('primetube','root','',{'dialect':'mysql','host':
 
 const VideoModel = sequelize.define('Video',{
     id:{
-        type:DataTypes.INTEGER,
-        autoIncrement:true,
+        type:DataTypes.UUID,
+        defaultValue:Sequelize.UUIDV4,
         primaryKey:true
     },
     title:{
@@ -28,6 +28,10 @@ const VideoModel = sequelize.define('Video',{
         type:DataTypes.INTEGER,
         allowNull:false,
         defaultValue:0
+    },
+    category:{
+        type:DataTypes.STRING,
+        allowNull:false
     }
 })
 

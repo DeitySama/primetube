@@ -6,22 +6,46 @@ const {} = require('sequelize');
 
 exports.getVideos = async(req,res,next)=>{
     let videos;
-    const {query,limit,offset} = req.query;
+    const {query,limit,offset,category} = req.query;
         if(query){
             videos = await Video.findAll({
                 limit:10,
                 where:{
-                    description:sequelize.where(sequelize.fn('LOWER', sequelize.col('description')), 'LIKE', '%' + query.toLowerCase() + '%')                    
+                    description:sequelize.where(sequelize.fn('LOWER', sequelize.col('description')), 'LIKE', '%' + query.toLowerCase() + '%'),                
                 }
             })
 
-            res.json(videos)
+            res.json(videos).status(200)
+        }
+
+        else if(category){
+            videos = await Video.findAll({
+                limit:10,
+                where:{
+                    category:category,                
+                }
+            })
+
+            res.json(videos).status(200)
         }
         else{
-            videos = await Video.findAll({limit:limit, offset:offset});
-            res.json(videos)
+            videos = await Video.findAll({limit:parseInt(limit)||10, offset:parseInt(offset)||0});
+            res.json(videos).status(200)
         }
+}
+
+exports.getRecommended = async(req,res,next)=>{
+    let videos;
+
+    try{
+        videos = await Video.findAll({limit:5,where:{category:req.params.id}})
+        res.json(videos).status(200)
     }
+    catch(err){
+        res.json({err}).status(404)
+    }
+}
+
 
 exports.createVideo = async (req,res,next)=>{
     try{

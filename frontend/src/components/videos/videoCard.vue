@@ -1,5 +1,6 @@
 <script setup>
     import {ref,toRefs,defineProps} from "vue";
+    import {base_url} from "../../config/config"
 
     const props = defineProps({
         data:Object
@@ -10,17 +11,19 @@
 <template>
     <div class="space-y-5">
         <div>
-            <img :src="'http://localhost:5600'+data.thumbnail" alt="" class="w-full h-60 object-cover rounded-xl">
+            <img :src="base_url+data.thumbnail" alt="" class="w-full  h-36 md:h-60 object-cover rounded-xl">
         </div>
-        <div class="">
+        <div class="flex justify-between md:block">
             <div>
-                <p class="text-lg font-bold">{{ data.description }}</p>
+                <div>
+                    <p class="md:text-lg font-bold text-sm dark:text-white dark:font-normal">{{ data.description }}</p>
+                </div>
+                <div>
+                    <h1 class="text-slate-600 text-xs md:text-base dark:text-zinc-600">{{ data.title }}</h1>
+                </div>
             </div>
-            <div>
-                <h1 class="text-slate-600">{{ data.title }}</h1>
-            </div>
-            <div class="mt-3">
-                <p class="text-sm text-slate-400"><i class="uil uil-eye"></i> {{ data.views }} views</p>
+            <div class="w-[30%] text-right md:text-left md:w-auto md:mt-3">
+                <p class="text-xs md:text-sm text-slate-400"><i class="uil uil-eye"></i> {{ data.views }} views</p>
             </div>
         </div>
     </div>

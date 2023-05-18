@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia';
 import axios from "axios";
-
-
-const BASE_URL = 'http://10.0.0.209:5600';
+import { base_url } from '../config/config';
 
 export const videos = defineStore('videoStore',{
     state:()=>{
         return{
             videos:[],
-            loading:true
+            loading:true,
+            limit:10
         }
     },
 
@@ -17,21 +16,44 @@ export const videos = defineStore('videoStore',{
     },
 
     actions:{
-        async getVideos(){
-         return   axios.get(BASE_URL+"/primetube/videos").then((res)=>{
-                this.videos = res.data
-            })
+         async getVideos(){
+                return   axios.get(base_url+"/primetube/videos?"+`limit=${this.limit}`).then((res)=>{
+                    this.videos = res.data
+                })
             },
 
             async getVideo(id){
-                const res = await axios.get(BASE_URL+"/primetube/videos/"+id);
+                const res = await axios.get(base_url+"/primetube/videos/"+id);
                 return res;
             },
 
             async queryVideo(query){
-                const res = await axios.get(BASE_URL+"/primetube/videos?query="+query);
+                const res = await axios.get(base_url+"/primetube/videos?query="+query);
                 return res.data;
-            }
-        }
+            },
+
+            async getByCategory(category){
+                const res = await axios.get(base_url+"/primetube/videos?category="+category);
+                return res.data;
+            },
+
+            async getNext(pagenumber){
+                console.log(pagenumber,this.limit*(pagenumber))
+                axios.get(base_url+"/primetube/videos?"+`limit=${this.limit}&offset=${(this.limit*(pagenumber))||0}`).then((res)=>{
+                            res.data.forEach(item=>{
+                                this.videos.push(item);
+                            })
+                        })
+                },
+                async getRecommended(id){
+                    try{
+                        return await axios.get(base_url+`/primetube/videos/recommended/`+id);
+                    }
+                    catch(err){
+                        console.error(err)
+                    }
+                }
+            },
+
 })
 
